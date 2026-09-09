@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 43
 __lua__
--- sattelite racer
+-- sattelite racer v 0.1
 
 radius = 30
 originx = 64
