@@ -7,6 +7,12 @@ radius = 30
 originx = 64
 originy = 64
 angle = 0
+angle_r = 0
+size = 20
+x = 0
+y = 0
+sa = 0
+s = 1
 
 
 function _init()
@@ -17,13 +23,17 @@ function _update()
 	angle += 3
 	if (angle > 360) angle = 0
 	cls()
+	s = 1
+ sa = angle_r / 360
 	x = originx + radius * cos(angle/360)
 	y = originy + radius * sin(angle/360)
-	spr(1, x, y)
+	if btn(➡️) then angle_r -= 3 end
+	if btn(⬅️) then angle_r +=3 	end
 end
 
-function _draw()
 
+function _draw()
+	rspr(s*8,0,8,8,sa,x,y,size,size)
 end
 
 
