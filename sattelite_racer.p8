@@ -19,9 +19,9 @@ start = 0
 function _init()
 	cls()
 	local start_x = 20
-	local start_y = 30
-	print ("★ sattelite racer ★", start_x, start_y)
-	print ("press ❎ to start", start_x+9,start_y+10)
+	local start_y = 58
+	print ("\f9★ \fcsatellite racer \f9★", start_x, start_y)
+	print ("press ❎ to start", start_x+9,start_y+10, 7)
 	while (start == 0) do
 		if btn(❎) then start = 1
 	end
