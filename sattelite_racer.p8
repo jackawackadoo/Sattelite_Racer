@@ -12,9 +12,9 @@ originx = 64
 originy = 64
 angle = 0
 angle_r = 0
--- size > 10 too big
--- size < 10 poor detail
-size = 10 
+-- size > 12 too big
+-- size < 12 poor detail
+size = 12 
 x = 0
 y = 0
 sa = 0
