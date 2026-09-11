@@ -12,9 +12,9 @@ originx = 64
 originy = 64
 angle = 0
 angle_r = 0
--- size > 10 too big
--- size < 10 poor detail
-size = 10 
+-- size > 12 too big
+-- size < 12 poor detail
+size = 12 
 x = 0
 y = 0
 sa = 0
@@ -167,6 +167,17 @@ end
 
 function tan(angle)
 	return (sin(angle) / cos(angle))
+end
+
+
+
+-- iterate through every existing
+-- planet, check if satellite
+-- is in the atmosphere of one
+function gravity_idx(sat_x, sat_y)
+	for p = 0, count(planets) do
+		
+	end
 end
 __gfx__
 00000000000060700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
