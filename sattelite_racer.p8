@@ -49,9 +49,12 @@ end
 
 
 function _draw()
+	planet = {x = 64, y = 64, radius = 5}
+	satellite = {x = 70, y = 64}
 	map(0,0, 0, 0, 128, 128)
 	rect(0,0,127,127, 8)
 	draw_planet(64,64,5, 9)
+	check_gravity(satellite, planet)
 	rspr(s*8,0,8,8,sa,x,y,size,size)
 end
 
@@ -96,17 +99,74 @@ end
 -- x pos, y pos, radius, color
 planet_idx = 0
 planets = {}
-
+atmosphere_r = 2.5
 
 
 function draw_planet(x_spot, y_spot, size, c)
-	atmosphere = size * 2.5
+	atmosphere = size * atmosphere_r
 	circfill(x_spot, y_spot, size, c)
 	circ(x_spot, y_spot, atmosphere, 7)
 end
 
-function new_planet()
-	--add(planets, {x = 
+function new_planet() 
+	--add(planets, {x =
+end
+
+
+-- is this planet's gravity
+-- acting on the satellite?
+function check_gravity(satellite, planet)
+	t_x = abs(satellite.x - planet.x)	
+	t_y = abs(satellite.y - planet.y)
+	t_h = flr(sqrt((t_x^2) + (t_y^2)))
+	-- note: replace with meaningful code
+	-- below
+	if (t_h > planet.radius and t_h < (planet.radius * atmosphere_r)) then
+		print ("gravity time")
+
+	else 
+		print ("oh fuck float time bro")
+	end
+end
+
+-->8
+-- satellite functions
+
+
+-- this table tracks all the 
+-- relevant info for the 
+-- satellite (playable character)
+
+-- (x,y) coords, angle sprite points to
+-- speed: delta x per update
+-- is gravity pullling sat
+-- radius of orbit
+satellite = {x = 0, y = 0, angle = 0, launch_angle = 0, speed = 0,gravity = false, radius = 0}
+
+
+-- update satellie table
+-- this includes:
+-- position, angle, gravity radius
+function update_sat(sat)
+	-- split into subfunctions
+	-- update x and y
+	-- check gravity
+	-- edit radius
+end
+
+function update_pos(sat)
+	if (sat.gravity) then
+		-- get grav radius 
+		-- orbit planet
+	else 
+		-- no gravity movement 
+		sat.x += speed
+		sat.y += tan(sat.launch_angle) * speed
+	end
+end
+
+function tan(angle)
+	return (sin(angle) / cos(angle))
 end
 __gfx__
 00000000000060700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
