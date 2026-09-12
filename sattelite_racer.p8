@@ -36,11 +36,14 @@ end
 
 function _update()
 		cls()
+		if (satellite.angle < 0) then
+			satellite.anlge += 1
+		end
+		satellite.angle = angle_r / 360
 		if btn(➡️) then angle_r -= 3 end
 		if btn(⬅️) then angle_r +=3 	end
 		if btn(🅾️) then sat_fart(satellite) end
 		update_pos(satellite)
-	 satellite.angle = angle_r / 360
 end
 
 
@@ -129,7 +132,7 @@ function check_gravity(sat)
 			sat.launch_available = true
 		end
 		sat.gravity = true
-		sat.launch_angle = 0
+		--sat.launch_angle = 0
 		
 	else 
 
@@ -167,7 +170,7 @@ end
 -- speed: delta x per update
 -- is gravity pullling sat
 -- radius of orbit
-satellite = {x = 0, y = 128, angle = 0.95, launch_angle = 0.1, speed = 1,gravity = false, radius = (5*3), planet = {x=64,y=64,radius=5}, planet_angle = 0, launch_available = true}
+satellite = {x = 0, y = 128, angle = 0, launch_angle = 0.1, speed = 1,gravity = false, radius = (5*3), planet = {x=64,y=64,radius=5}, planet_angle = 0, launch_available = true}
 c_speed = 2
 
 -- update satellie table
@@ -181,7 +184,7 @@ function update_sat(sat)
 end
 
 function update_pos(sat)
-	if not(sat.gravity) then
+	if not(sat.gravity or not sat.launch_available) then
 		if ((sat.launch_angle > 0.5) and (sat.launch_angle < 0.75)) then 
 			sat.speed = abs(sat.speed) * (-1)
 		else 
