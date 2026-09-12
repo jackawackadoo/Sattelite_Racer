@@ -169,7 +169,7 @@ end
 -- is gravity pullling sat
 -- radius of orbit
 satellite = {x = 0, y = 128, angle = 0.95, launch_angle = 0.1, speed = 1,gravity = false, radius = (5*3), planet = {x=64,y=64,radius=5}, planet_angle = 0, launch_available = true}
-
+c_speed = 2
 
 -- update satellie table
 -- this includes:
@@ -223,7 +223,11 @@ end
 
 -- launch sat out of gravity
 function sat_fart(sat)
-	sat.launch_available = false
+	sat.launch_available = false\
+	sat.launch_angle = sat.angle
+	local slope = tan(dir)
+	
+	sat.speed = cos(sat.launch_angle) * c_speed
 	while not(check_gravity(sat)) do
 		
 	end
