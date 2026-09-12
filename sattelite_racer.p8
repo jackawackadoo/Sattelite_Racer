@@ -35,15 +35,10 @@ function _init()
 end
 
 function _update()
-		angle += 3
-		if (angle > 360) angle = 0
 		cls()
 		satellite.angle = 25
 		update_pos(satellite)
-		s = 1
 	 satellite.angle = angle_r / 360
-		x = originx + radius * cos(angle/360)
-		y = originy + radius * sin(angle/360)
 		if btn(➡️) then angle_r -= 3 end
 		if btn(⬅️) then angle_r +=3 	end
 		end
@@ -101,7 +96,7 @@ end
 -- x pos, y pos, radius, color
 planet_idx = 0
 planets = {}
-atmosphere_r = 2.5
+atmosphere_r = 3
 
 
 function draw_planet(x_spot, y_spot, size, c)
@@ -117,20 +112,47 @@ end
 
 -- is this planet's gravity
 -- acting on the satellite?
-function check_gravity(satellite, planet)
-	t_x = abs(satellite.x - planet.x)	
-	t_y = abs(satellite.y - planet.y)
+function check_gravity(sat)
+	t_x = abs(sat.x - sat.planet.x)	
+	t_y = abs(sat.y - sat.planet.y)
 	t_h = flr(sqrt((t_x^2) + (t_y^2)))
 	-- note: replace with meaningful code
 	-- below
-	if (t_h > planet.radius and t_h < (planet.radius * atmosphere_r)) then
-		print ("gravity time")
-
+	if (t_h > sat.planet.radius and t_h < ((sat.planet.radius * atmosphere_r)+4)) then
+		if not (sat.gravity) then
+			if (clock_dir(sat)) then
+				sat.speed = 8
+			else 
+				sat.speed = -8
+			end
+		end
+		sat.gravity = true
+		sat.launch_angle = 0
+		
 	else 
+		
 		print ("oh fuck float time bro")
+		sat.gravity = false
+		sat.speed = 1
 	end
 end
 
+
+
+
+-- depending on the angle of entry
+-- determine whether sat moves
+-- clockwise or counterclockwise
+function clock_dir(sat)
+	local p_x = sat.planet.x
+	local p_y = sat.planet.y
+	
+	if ((sat.y > p_y and sat.x < p_x) or (sat.y < p_y and sat.x > p_x)) then
+		return true
+	else
+		return false
+	end
+end
 -->8
 -- satellite functions
 
@@ -143,7 +165,7 @@ end
 -- speed: delta x per update
 -- is gravity pullling sat
 -- radius of orbit
-satellite = {x = 64, y = 64, angle = 0.60, launch_angle = 0.60, speed = 0.5,gravity = true, radius = (5*2.5), planet = {x=64,y=64,radius=5}, planet_angle = 0}
+satellite = {x = 0, y = 128, angle = 0.95, launch_angle = 0.1, speed = 1,gravity = false, radius = (5*3), planet = {x=64,y=64,radius=5}, planet_angle = 0}
 
 
 -- update satellie table
@@ -157,18 +179,23 @@ function update_sat(sat)
 end
 
 function update_pos(sat)
-	if ((sat.launch_angle > 0.5) and (sat.launch_angle < 0.75)) then 
-		sat.speed = abs(sat.speed) * (-1)
-	else 
-		sat.speed = abs(sat.speed)
+	if not(sat.gravity) then
+		if ((sat.launch_angle > 0.5) and (sat.launch_angle < 0.75)) then 
+			sat.speed = abs(sat.speed) * (-1)
+		else 
+			sat.speed = abs(sat.speed)
+		end
 	end
+	check_gravity(sat)
 	if (sat.gravity) then
-	
+		-- orbit
 	 sat.x = sat.planet.x + sat.radius * cos(sat.planet_angle/360)
 		sat.y = sat.planet.y + sat.radius * sin(sat.planet_angle/360)
 		sat.planet_angle += sat.speed
-		-- get grav radius 
-		-- orbit planet
+		
+		-- simulate gravitational
+		-- pull
+		sat.radius -=0.02
 	else 
 		-- no gravity movement 
 		sat.x += sat.speed
