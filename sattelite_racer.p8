@@ -38,8 +38,10 @@ function _update()
 		angle += 3
 		if (angle > 360) angle = 0
 		cls()
+		satellite.angle = 25
+		update_pos(satellite)
 		s = 1
-	 sa = angle_r / 360
+	 satellite.angle = angle_r / 360
 		x = originx + radius * cos(angle/360)
 		y = originy + radius * sin(angle/360)
 		if btn(➡️) then angle_r -= 3 end
@@ -50,12 +52,12 @@ end
 
 function _draw()
 	planet = {x = 64, y = 64, radius = 5}
-	satellite = {x = 70, y = 64}
+
 	map(0,0, 0, 0, 128, 128)
 	rect(0,0,127,127, 8)
 	draw_planet(64,64,5, 9)
 	check_gravity(satellite, planet)
-	rspr(s*8,0,8,8,sa,x,y,size,size)
+	rspr(s*8,0,8,8,satellite.angle,satellite.x,satellite.y,size,size)
 end
 
 
@@ -141,7 +143,7 @@ end
 -- speed: delta x per update
 -- is gravity pullling sat
 -- radius of orbit
-satellite = {x = 0, y = 0, angle = 0, launch_angle = 0, speed = 0,gravity = false, radius = 0}
+satellite = {x = 64, y = 64, angle = 0.23, launch_angle = 0.16, speed = 0.5,gravity = false, radius = 0}
 
 
 -- update satellie table
@@ -160,8 +162,8 @@ function update_pos(sat)
 		-- orbit planet
 	else 
 		-- no gravity movement 
-		sat.x += speed
-		sat.y += tan(sat.launch_angle) * speed
+		sat.x += sat.speed
+		sat.y += tan(sat.launch_angle) * sat.speed
 	end
 end
 
