@@ -119,18 +119,21 @@ function check_gravity(sat)
 	-- note: replace with meaningful code
 	-- below
 	if (t_h > sat.planet.radius and t_h < ((sat.planet.radius * atmosphere_r)+4)) then
+		-- trnasition from out of 
+		-- gravity to in gravity
 		if not (sat.gravity) then
 			if (clock_dir(sat)) then
 				sat.speed = 8
 			else 
 				sat.speed = -8
 			end
+			sat.launch_available = true
 		end
 		sat.gravity = true
 		sat.launch_angle = 0
 		
 	else 
-		
+
 		print ("oh fuck float time bro")
 		sat.gravity = false
 		sat.speed = 1
@@ -165,7 +168,7 @@ end
 -- speed: delta x per update
 -- is gravity pullling sat
 -- radius of orbit
-satellite = {x = 0, y = 128, angle = 0.95, launch_angle = 0.1, speed = 1,gravity = false, radius = (5*3), planet = {x=64,y=64,radius=5}, planet_angle = 0}
+satellite = {x = 0, y = 128, angle = 0.95, launch_angle = 0.1, speed = 1,gravity = false, radius = (5*3), planet = {x=64,y=64,radius=5}, planet_angle = 0, launch_available = true}
 
 
 -- update satellie table
@@ -216,6 +219,15 @@ function gravity_idx(sat_x, sat_y)
 	for p = 0, count(planets) do
 		
 	end
+end
+
+-- launch sat out of gravity
+function sat_fart(sat)
+	sat.launch_available = false
+	while not(check_gravity(sat)) do
+		
+	end
+	
 end
 __gfx__
 00000000000060700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
