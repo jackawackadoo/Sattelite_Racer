@@ -143,7 +143,7 @@ end
 -- speed: delta x per update
 -- is gravity pullling sat
 -- radius of orbit
-satellite = {x = 64, y = 64, angle = 0.23, launch_angle = 0.16, speed = 0.5,gravity = false, radius = 0}
+satellite = {x = 64, y = 64, angle = 0.60, launch_angle = 0.60, speed = 0.5,gravity = false, radius = 0}
 
 
 -- update satellie table
@@ -157,6 +157,11 @@ function update_sat(sat)
 end
 
 function update_pos(sat)
+	if ((sat.launch_angle > 0.5) and (sat.launch_angle < 0.75)) then 
+		sat.speed = abs(sat.speed) * (-1)
+	else 
+		sat.speed = abs(sat.speed)
+	end
 	if (sat.gravity) then
 		-- get grav radius 
 		-- orbit planet
