@@ -37,7 +37,7 @@ end
 function _update()
 		cls()
 		if (satellite.angle < 0) then
-			satellite.anlge += 1
+			satellite.angle += 1
 		end
 		satellite.angle = angle_r / 360
 		if btn(➡️) then angle_r -= 3 end
@@ -226,7 +226,7 @@ end
 -- launch sat out of gravity
 function sat_fart(sat)
 	sat.launch_available = false
-	sat.launch_angle = sat.angle
+	sat.launch_angle = sat.angle + 0.25
 	
 	sat.speed = cos(sat.launch_angle) * c_speed	
 
