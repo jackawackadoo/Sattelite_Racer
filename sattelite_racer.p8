@@ -20,6 +20,7 @@ y = 0
 sa = 0
 s = 1
 start = 0
+alive = true
 
 
 function _init()
@@ -118,8 +119,7 @@ function check_gravity(sat)
 	t_x = abs(sat.x - sat.planet.x)	
 	t_y = abs(sat.y - sat.planet.y)
 	t_h = flr(sqrt((t_x^2) + (t_y^2)))
-	-- note: replace with meaningful code
-	-- below
+
 	if (t_h > sat.planet.radius and t_h < ((sat.planet.radius * atmosphere_r)+4)) then
 		-- trnasition from out of 
 		-- gravity to in gravity
@@ -135,10 +135,23 @@ function check_gravity(sat)
 		--sat.launch_angle = 0
 		
 	else 
+	
 
-		print ("oh fuck float time bro")
 		sat.gravity = false
 		sat.speed = 1
+	end
+end
+
+function check_collision(sat)
+	t_x = abs(sat.x - sat.planet.x)	
+	t_y = abs(sat.y - sat.planet.y)
+	t_h = flr(sqrt((t_x^2) + (t_y^2)))
+	
+	if (t_h <= sat.planet.radius) then
+		-- collision happened, game over
+		return true
+	else 
+		return false
 	end
 end
 
@@ -170,7 +183,7 @@ end
 -- speed: delta x per update
 -- is gravity pullling sat
 -- radius of orbit
-satellite = {x = 0, y = 128, angle = 0, launch_angle = 0.1, speed = 1,gravity = false, radius = (5*3), planet = {x=64,y=64,radius=5}, planet_angle = 0, launch_available = true}
+satellite = {x = 0, y = 128, angle = 0, launch_angle = 0.1, speed = 1,gravity = false, radius = (5*3), planet = {x=64,y=64,radius=5}, planet_angle = 0, launch_available = false}
 c_speed = 2
 
 -- update satellie table
@@ -203,8 +216,15 @@ function update_pos(sat)
 		sat.radius -=0.02
 	else 
 		-- no gravity movement 
-		sat.x += sat.speed
-		sat.y += tan(sat.launch_angle) * sat.speed
+		
+		if (sat.launch_angle == 0.25) then
+			sat.y -= c_speed
+		elseif (sat.launch_angle == 0.75) then
+			sat.y += c_speed
+		else 
+			sat.x += sat.speed
+			sat.y += tan(sat.launch_angle) * sat.speed
+		end
 	end
 end
 
@@ -225,10 +245,13 @@ end
 
 -- launch sat out of gravity
 function sat_fart(sat)
-	sat.launch_available = false
-	sat.launch_angle = sat.angle + 0.25
-	
-	sat.speed = cos(sat.launch_angle) * c_speed	
+	if (sat.launch_available) then
+		sat.launch_available = false
+		sat.launch_angle = sat.angle + 0.25
+		
+		sat.speed = cos(sat.launch_angle) * c_speed	
+		
+	end
 
 end
 __gfx__
