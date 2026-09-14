@@ -28,11 +28,13 @@ function _init()
 	cls()
 	local start_x = 20
 	local start_y = 58
+	add_planet()
 	print ("\f9★ \fcsatellite racer \f9★", start_x, start_y)
 	print ("press ❎ to start", start_x+9,start_y+10, 7)
 	while (start == 0) do
 		if btn(❎) then start = 1 end
 	end
+
 	
 end
 
@@ -44,8 +46,8 @@ function _update()
 				satellite.angle += 1
 			end
 			satellite.angle = angle_r / 360
-			if btn(➡️) then angle_r -= 3 end
-			if btn(⬅️) then angle_r +=3 	end
+			if btn(➡️) then angle_r -= 5 end
+			if btn(⬅️) then angle_r +=5 	end
 			if btn(🅾️) then sat_fart(satellite) end
 			update_pos(satellite)
 		else 
@@ -62,7 +64,7 @@ function _draw()
 	draw_planet(mars)
 	check_gravity(satellite, planet)
 	rspr(s*8,0,8,8,satellite.angle,satellite.x,satellite.y,size,size)
-	--draw_map()
+	draw_map()
 end
 
 
@@ -105,7 +107,7 @@ end
 -- that contains:
 -- x pos, y pos, radius, color
 planet_idx = 0
-mars = {x = 64, y = 64, radius = 5, c = flr(rnd(16))+1}
+mars = {x = 64, y = 64, radius = 5, c = flr(rnd(15))+1}
 planets = {}
 planets[0] = mars
 atmosphere_r = 3
@@ -120,10 +122,10 @@ function draw_planet(p_)
 end
 
 function add_planet() 
-	local p_x = flr(rnd(10)) + planets[planet_idx].x + 10
+	local p_x = flr(rnd(50)) + planets[planet_idx].x + 40
 	local p_y = flr(rnd(90)) + 38
-	local p_r = flr(rnd(13))
-	local p_c = flr(rnd(16))
+	local p_r = flr(rnd(13) +3)
+	local p_c = flr(rnd(15)) + 1
 	local pluto = {x = p_x, y = p_y, radius = p_r, c = p_c}
 	add(planets, pluto)
 	planet_idx += 1
@@ -146,6 +148,7 @@ function check_gravity(sat)
 		-- trnasition from out of 
 		-- gravity to in gravity
 		if not (sat.gravity) then
+			sat.radius = sat.planet.radius * atmosphere_r
 			if (clock_dir(sat)) then
 				sat.speed = 8
 			else 
@@ -310,10 +313,12 @@ function update_map()
 	update_sat()
 	map_pos += scroll_rate * 0.7
 	if (planet_idx > 0) then
-		if (planets[1].x + (radius * atmosphere_r)) then
-			rmv_planet()
-			add_planet()
+		if (planets[planet_idx].x + (radius * atmosphere_r)) then
+			--rmv_planet()
+			--add_planet()
 		end
+	else
+		add_planet()
 	end
 	
 end
@@ -345,7 +350,7 @@ function draw_map()
 end
 
 function draw_planets()
-	for p = 1, count(planets) do
+	for p = 0, count(planets) do
 		draw_planet(planets[p])
 	end
 end
