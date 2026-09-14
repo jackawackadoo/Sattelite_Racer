@@ -21,6 +21,7 @@ sa = 0
 s = 1
 start = 0
 alive = true
+scroll_speed = 0.75
 
 
 function _init()
@@ -37,25 +38,31 @@ end
 
 function _update()
 		cls()
-		if (satellite.angle < 0) then
-			satellite.angle += 1
+		current_planet(satellite)
+		if not (check_collision(satellite))then
+			if (satellite.angle < 0) then
+				satellite.angle += 1
+			end
+			satellite.angle = angle_r / 360
+			if btn(➡️) then angle_r -= 3 end
+			if btn(⬅️) then angle_r +=3 	end
+			if btn(🅾️) then sat_fart(satellite) end
+			update_pos(satellite)
+		else 
+			s = 3
 		end
-		satellite.angle = angle_r / 360
-		if btn(➡️) then angle_r -= 3 end
-		if btn(⬅️) then angle_r +=3 	end
-		if btn(🅾️) then sat_fart(satellite) end
-		update_pos(satellite)
+		update_map()
 end
 
 
 function _draw()
-	planet = {x = 64, y = 64, radius = 5}
 
-	map(0,0, 0, 0, 128, 128)
-	rect(0,0,127,127, 8)
-	draw_planet(64,64,5, 9)
+	map(map_pos,0, 0, 0, 128, 128)
+	--rect(0,0,127,127, 8)
+	draw_planet(mars)
 	check_gravity(satellite, planet)
 	rspr(s*8,0,8,8,satellite.angle,satellite.x,satellite.y,size,size)
+	--draw_map()
 end
 
 
@@ -98,18 +105,33 @@ end
 -- that contains:
 -- x pos, y pos, radius, color
 planet_idx = 0
+mars = {x = 64, y = 64, radius = 5, c = flr(rnd(16))+1}
 planets = {}
+planets[0] = mars
 atmosphere_r = 3
+collided = false
+grav_idx = 0
 
 
-function draw_planet(x_spot, y_spot, size, c)
-	atmosphere = size * atmosphere_r
-	circfill(x_spot, y_spot, size, c)
-	circ(x_spot, y_spot, atmosphere, 7)
+function draw_planet(p_)
+	atmosphere = p_.radius * atmosphere_r
+	circfill(p_.x, p_.y, p_.radius, p_.c)
+	circ(p_.x, p_.y, atmosphere, 7)
 end
 
-function new_planet() 
-	--add(planets, {x =
+function add_planet() 
+	local p_x = flr(rnd(10)) + planets[planet_idx].x + 10
+	local p_y = flr(rnd(90)) + 38
+	local p_r = flr(rnd(13))
+	local p_c = flr(rnd(16))
+	local pluto = {x = p_x, y = p_y, radius = p_r, c = p_c}
+	add(planets, pluto)
+	planet_idx += 1
+end
+
+function rmv_planet()
+	deli(planets, 1)
+	planet_idx -= 1
 end
 
 
@@ -147,11 +169,36 @@ function check_collision(sat)
 	t_y = abs(sat.y - sat.planet.y)
 	t_h = flr(sqrt((t_x^2) + (t_y^2)))
 	
-	if (t_h <= sat.planet.radius) then
+	if (t_h <= sat.planet.radius or sat.y < 0 or sat.x < 0) then
 		-- collision happened, game over
+		if not (collided) then
+			sfx(1)
+			collided = true
+		end
 		return true
 	else 
+		
 		return false
+	end
+end
+
+-- iterate through every existing
+-- planet, check if satellite
+-- is in the atmosphere of one
+function current_planet(sat)
+	local shortest_d = 1000000
+	for p = 0, count(planets) do
+		print("checking planet:")
+		print(p)
+		print(planets[0].x)
+		t_x = abs(sat.x - planets[p].x)	
+		t_y = abs(sat.y - planets[p].y)
+		t_h = flr(sqrt((t_x^2) + (t_y^2)))
+		if t_h < shortest_d then
+			shortest_d = t_h 
+			sat.planet = planets[p]
+			grav_idx = p
+		end
 	end
 end
 
@@ -183,7 +230,7 @@ end
 -- speed: delta x per update
 -- is gravity pullling sat
 -- radius of orbit
-satellite = {x = 0, y = 128, angle = 0, launch_angle = 0.1, speed = 1,gravity = false, radius = (5*3), planet = {x=64,y=64,radius=5}, planet_angle = 0, launch_available = false}
+satellite = {x = 64, y = 57, angle = 0, launch_angle = 0.1, speed = 1,gravity = false, radius = (5*3), planet = {x=0,y=0,radius=5}, planet_angle = 0, launch_available = false}
 c_speed = 2
 
 -- update satellie table
@@ -197,6 +244,9 @@ function update_sat(sat)
 end
 
 function update_pos(sat)
+	if (sat.launch_angle < 0) then
+		sat.launch_angle += 1
+	end
 	if not(sat.gravity or not sat.launch_available) then
 		if ((sat.launch_angle > 0.5) and (sat.launch_angle < 0.75)) then 
 			sat.speed = abs(sat.speed) * (-1)
@@ -234,18 +284,12 @@ end
 
 
 
--- iterate through every existing
--- planet, check if satellite
--- is in the atmosphere of one
-function gravity_idx(sat_x, sat_y)
-	for p = 0, count(planets) do
-		
-	end
-end
+
 
 -- launch sat out of gravity
 function sat_fart(sat)
 	if (sat.launch_available) then
+		sfx(0)
 		sat.launch_available = false
 		sat.launch_angle = sat.angle + 0.25
 		
@@ -254,14 +298,65 @@ function sat_fart(sat)
 	end
 
 end
+-->8
+-- regular updates
+
+scroll_rate = 0.2
+map_pos = 0
+
+function update_map()
+	-- sidescroll and redraw everything!
+	update_planets()
+	update_sat()
+	map_pos += scroll_rate * 0.7
+	if (planet_idx > 0) then
+		if (planets[1].x + (radius * atmosphere_r)) then
+			rmv_planet()
+			add_planet()
+		end
+	end
+	
+end
+
+
+
+function update_planets()
+	for p = 0, count (planets) do
+		planets[p].x -= scroll_rate
+	end
+end
+
+function update_sat()
+	satellite.x -= scroll_rate
+end
+-->8
+-- regular drawing
+
+
+
+function draw_map()
+		cls()
+		map(map_pos,0, 0, 0, 128, 128)
+		draw_planets()
+		rspr(s*8,0,8,8,satellite.angle,satellite.x,satellite.y,size,size)
+
+		
+
+end
+
+function draw_planets()
+	for p = 1, count(planets) do
+		draw_planet(planets[p])
+	end
+end
 __gfx__
-00000000000060700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000066000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700000066600070070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000000550000007700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000506666050007700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700566b86650070070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000000005068b6050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000060700000000058885850000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000066000000000008988985000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00700700000066600070070088999980000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000770000005500000077000889aa998000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000770005066660500077000899aa998000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00700700566b86650070070055999985000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000005068b6050000000005888885000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000006b86000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 0000000200000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -288,3 +383,10 @@ __map__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000
 __sfx__
 00010e06150501505015050150501505015050000000c7500e7500e1500c1500e1500c1500c1500c1500e1500e1500e0500e05021050280502b0502c0502c050270501c0501b0501b0501c0501d0500000000000
+0009000026650226501b650136500f650076500465000650006500065000650006500065000600006000060000600000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000001a05000000000002605025000180501800018000250502500025000150500000024050130502400021050000000a05003050070500205000000000000500009000050000000000000
+00100000000001535015350153501535000000000000000000000143501435014350143501430014300143000000012350123501135011350103500d3500c3500c3500b3500a3500935009350093500000000000
+__music__
+00 41424344
+00 01024344
+
