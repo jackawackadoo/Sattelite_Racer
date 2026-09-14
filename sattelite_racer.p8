@@ -7,6 +7,7 @@ __lua__
 -- outdated variables
 -- to be removed when gravity
 -- is added
+score = 0
 radius = 30
 originx = 64
 originy = 64
@@ -106,14 +107,17 @@ end
 -- each element is a planet list
 -- that contains:
 -- x pos, y pos, radius, color
-planet_idx = 0
 mars = {x = 64, y = 64, radius = 5, c = flr(rnd(15))+1}
 planets = {}
 planets[0] = mars
 atmosphere_r = 3
 collided = false
 grav_idx = 0
-
+planets_rmvd = 0
+collision_type = -1
+orbit_speed = 8
+hypotenuse = -1
+hypotenuse_c = -1
 
 function draw_planet(p_)
 	atmosphere = p_.radius * atmosphere_r
@@ -122,42 +126,45 @@ function draw_planet(p_)
 end
 
 function add_planet() 
-	local p_x = flr(rnd(50)) + planets[planet_idx].x + 40
-	local p_y = flr(rnd(90)) + 38
-	local p_r = flr(rnd(13) +3)
+	local p_r = flr(rnd(9)) +3
+	local p_x = flr(rnd(50)) + planets[count(planets)].x + 40 + (0.6 * p_r)
+	local p_y = flr(rnd(80)) + 40 - p_r
 	local p_c = flr(rnd(15)) + 1
 	local pluto = {x = p_x, y = p_y, radius = p_r, c = p_c}
 	add(planets, pluto)
-	planet_idx += 1
 end
 
 function rmv_planet()
-	deli(planets, 1)
-	planet_idx -= 1
+	deli(planets, 0)
+	planets_rmvd += 1
 end
 
 
 -- is this planet's gravity
 -- acting on the satellite?
 function check_gravity(sat)
-	t_x = abs(sat.x - sat.planet.x)	
-	t_y = abs(sat.y - sat.planet.y)
-	t_h = flr(sqrt((t_x^2) + (t_y^2)))
-
-	if (t_h > sat.planet.radius and t_h < ((sat.planet.radius * atmosphere_r)+4)) then
-		-- trnasition from out of 
-		-- gravity to in gravity
-		if not (sat.gravity) then
-			sat.radius = sat.planet.radius * atmosphere_r
-			if (clock_dir(sat)) then
-				sat.speed = 8
-			else 
-				sat.speed = -8
+	--for p = 0, count(planets) do
+		--t_x = abs(sat.x - planets[p].x)	
+		--t_y = abs(sat.y - planets[p].y)
+		t_x = abs(sat.x - sat.planet.x)	
+		t_y = abs(sat.y - sat.planet.y)
+		t_h = flr(sqrt((t_x^2) + (t_y^2)))
+		hypotenuse = t_h
+		if (t_h > sat.planet.radius and t_h < ((sat.planet.radius * atmosphere_r)+4)) then
+--			sat.planet = planets[p]
+			-- transition from out of 
+			-- gravity to in gravity
+			if not (sat.gravity) then
+				sat.radius = (sat.planet.radius * atmosphere_r)
+				if (clock_dir(sat)) then
+					sat.speed = orbit_speed
+				else 
+					sat.speed = orbit_speed * -1
+				end
+				sat.launch_available = true
 			end
-			sat.launch_available = true
-		end
-		sat.gravity = true
-		--sat.launch_angle = 0
+			sat.gravity = true
+			--sat.launch_angle = 0
 		
 	else 
 	
@@ -170,14 +177,24 @@ end
 function check_collision(sat)
 	t_x = abs(sat.x - sat.planet.x)	
 	t_y = abs(sat.y - sat.planet.y)
-	t_h = flr(sqrt((t_x^2) + (t_y^2)))
+	t_h = flr(sqrt((t_x^2) + (t_y^2))) + 2
+	hypotenuse = t_h
 	
-	if (t_h <= sat.planet.radius or sat.y < 0 or sat.x < 0) then
+	
+	if ((t_h <= sat.planet.radius and x < 128 and not (hypotenuse == 0)) or sat.y < 0 or sat.x < 0) then
 		-- collision happened, game over
 		if not (collided) then
 			sfx(1)
 			collided = true
 		end
+		if(t_h <= sat.planet.radius) then
+			hypotenuse_c = t_h
+			collision_type = 1
+		elseif (sat.x < 0) then
+			collision_type = 2
+		else
+			collision_type = 3
+		end 
 		return true
 	else 
 		
@@ -189,11 +206,8 @@ end
 -- planet, check if satellite
 -- is in the atmosphere of one
 function current_planet(sat)
-	local shortest_d = 1000000
+	local shortest_d = 10000
 	for p = 0, count(planets) do
-		print("checking planet:")
-		print(p)
-		print(planets[0].x)
 		t_x = abs(sat.x - planets[p].x)	
 		t_y = abs(sat.y - planets[p].y)
 		t_h = flr(sqrt((t_x^2) + (t_y^2)))
@@ -244,9 +258,14 @@ function update_sat(sat)
 	-- update x and y
 	-- check gravity
 	-- edit radius
+	--update_pos(sat)
 end
 
 function update_pos(sat)
+if (collided) then
+	sat.x -= scroll_rate
+	return
+end
 	if (sat.launch_angle < 0) then
 		sat.launch_angle += 1
 	end
@@ -304,22 +323,25 @@ end
 -->8
 -- regular updates
 
-scroll_rate = 0.2
+scroll_rate = 0.5
 map_pos = 0
+planet_timer = 0
+planet_trigger = 54 / scroll_rate 
 
 function update_map()
+	planet_timer += 1
+	if (planet_timer % 10 == 0) then
+		current_planet(satellite)
+		score += 1
+	end
 	-- sidescroll and redraw everything!
 	update_planets()
-	update_sat()
+--	update_sat(satellite)
 	map_pos += scroll_rate * 0.7
-	if (planet_idx > 0) then
-		if (planets[planet_idx].x + (radius * atmosphere_r)) then
-			--rmv_planet()
-			--add_planet()
-		end
-	else
-		add_planet()
+	if (map_pos >= 96) then
+		map_pos = 0
 	end
+	
 	
 end
 
@@ -329,6 +351,16 @@ function update_planets()
 	for p = 0, count (planets) do
 		planets[p].x -= scroll_rate
 	end
+	if (count(planets) > 1) then
+		if (planet_timer > planet_trigger) then
+			add_planet()
+			rmv_planet()
+			planet_timer = 0
+		end
+	else
+		add_planet()
+	end
+
 end
 
 function update_sat()
@@ -342,6 +374,8 @@ end
 function draw_map()
 		cls()
 		map(map_pos,0, 0, 0, 128, 128)
+		print("score: ")
+		print(score)
 		draw_planets()
 		rspr(s*8,0,8,8,satellite.angle,satellite.x,satellite.y,size,size)
 
